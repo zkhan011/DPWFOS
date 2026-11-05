@@ -1,0 +1,6 @@
+.git
+target
+.env
+upload
+*.p12
+*.jks

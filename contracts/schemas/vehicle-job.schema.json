@@ -1,0 +1,357 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "msgId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "eventTimestamp": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "format": "date-time"
+    },
+    "vehicleId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "seqNo": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[0-9]+$"
+    },
+    "jobId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "jobType": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "enum": [
+        "LOAD",
+        "DSCH",
+        "YARD"
+      ]
+    },
+    "jobAction": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "enum": [
+        "LOAD",
+        "UNLOAD"
+      ]
+    },
+    "jobState": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "enum": [
+        "DISPATCH",
+        "CANCEL",
+        "FINISH",
+        "UPDATE"
+      ]
+    },
+    "jobDetails": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "container": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "cntrNo": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "cntrIso": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "vehiclePos": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "enum": [
+                  "F",
+                  "A",
+                  "M",
+                  "0"
+                ]
+              },
+              "weight": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "cntrNo",
+              "cntrIso",
+              "vehiclePos"
+            ]
+          },
+          "fromPosition": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "const": "YARD"
+                  },
+                  "yardPosition": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "blockId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      },
+                      "bay": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      },
+                      "laneNo": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      }
+                    },
+                    "required": [
+                      "blockId",
+                      "bay",
+                      "laneNo"
+                    ]
+                  },
+                  "cranePosition": {
+                    "type": "null"
+                  }
+                },
+                "required": [
+                  "type",
+                  "yardPosition"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "const": "QC"
+                  },
+                  "yardPosition": {
+                    "type": "null"
+                  },
+                  "cranePosition": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "QCId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      },
+                      "laneNo": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      },
+                      "bay": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "QCId",
+                      "laneNo"
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "cranePosition"
+                ]
+              }
+            ]
+          },
+          "toPosition": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "const": "YARD"
+                  },
+                  "yardPosition": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "blockId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      },
+                      "bay": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      },
+                      "laneNo": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      }
+                    },
+                    "required": [
+                      "blockId",
+                      "bay",
+                      "laneNo"
+                    ]
+                  },
+                  "cranePosition": {
+                    "type": "null"
+                  }
+                },
+                "required": [
+                  "type",
+                  "yardPosition"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "const": "QC"
+                  },
+                  "yardPosition": {
+                    "type": "null"
+                  },
+                  "cranePosition": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "QCId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      },
+                      "laneNo": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      },
+                      "bay": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "QCId",
+                      "laneNo"
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "cranePosition"
+                ]
+              }
+            ]
+          },
+          "conePlan": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "pow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "twinFlag": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "enum": [
+              "T",
+              "Y",
+              "N"
+            ]
+          }
+        },
+        "required": [
+          "container",
+          "fromPosition",
+          "toPosition",
+          "conePlan",
+          "pow",
+          "twinFlag"
+        ]
+      }
+    },
+    "vesselVisit": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "msgId",
+    "eventTimestamp",
+    "vehicleId",
+    "seqNo",
+    "jobId",
+    "jobType",
+    "jobAction",
+    "jobState",
+    "jobDetails"
+  ]
+}

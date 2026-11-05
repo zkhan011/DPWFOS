@@ -1,0 +1,48 @@
+{
+  "asyncapi": "2.6.0",
+  "info": {
+    "title": "FMS to FOS events",
+    "version": "0.1.0"
+  },
+  "defaultContentType": "application/json",
+  "channels": {
+    "fos.fms.vehicle-yard-event.v1": {
+      "description": "FOS consumes; Kafka key must equal vehicleId. Dedicated environment group; FMS-only topic write ACL.",
+      "subscribe": {
+        "message": {
+          "name": "vehicle-yard-event",
+          "payload": {
+            "$ref": "./schemas/vehicle-yard-event.schema.json"
+          },
+          "bindings": {
+            "kafka": {
+              "key": {
+                "type": "string"
+              },
+              "bindingVersion": "0.4.0"
+            }
+          }
+        }
+      }
+    },
+    "fos.fms.vehicle-operation-status.v1": {
+      "description": "FOS consumes; Kafka key must equal vehicleId. Dedicated environment group; FMS-only topic write ACL.",
+      "subscribe": {
+        "message": {
+          "name": "vehicle-operation-status",
+          "payload": {
+            "$ref": "./schemas/vehicle-operation-status.schema.json"
+          },
+          "bindings": {
+            "kafka": {
+              "key": {
+                "type": "string"
+              },
+              "bindingVersion": "0.4.0"
+            }
+          }
+        }
+      }
+    }
+  }
+}

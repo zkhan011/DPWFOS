@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "msgId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "eventTimestamp": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "format": "date-time"
+    },
+    "vehicleId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "jobId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "eventType": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "enum": [
+        "TZ",
+        "TP",
+        "EXIT"
+      ]
+    },
+    "toPosition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "blockId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "bay": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "laneNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "blockId",
+        "bay",
+        "laneNo"
+      ]
+    }
+  },
+  "required": [
+    "msgId",
+    "eventTimestamp",
+    "vehicleId",
+    "jobId",
+    "eventType",
+    "toPosition"
+  ]
+}

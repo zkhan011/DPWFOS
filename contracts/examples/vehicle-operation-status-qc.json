@@ -1,0 +1,14 @@
+{
+  "msgId": "OPS-QC-EXAMPLE-001",
+  "eventTimestamp": "2026-10-22T14:12:25.123+04:00",
+  "vehicleId": "T501",
+  "area": {
+    "type": "QC",
+    "toPosition": {
+      "QCId": "QC01",
+      "laneNo": "02"
+    }
+  },
+  "craneId": "QC01",
+  "TPStatus": 3
+}

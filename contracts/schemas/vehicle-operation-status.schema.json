@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "msgId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "eventTimestamp": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "format": "date-time"
+    },
+    "vehicleId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "area": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "YARD"
+            },
+            "toPosition": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "blockId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "bay": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "laneNo": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                }
+              },
+              "required": [
+                "blockId",
+                "bay",
+                "laneNo"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "toPosition"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "QC"
+            },
+            "toPosition": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "QCId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "laneNo": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                }
+              },
+              "required": [
+                "QCId",
+                "laneNo"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "toPosition"
+          ]
+        }
+      ]
+    },
+    "craneId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "TPStatus": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 6
+    }
+  },
+  "required": [
+    "msgId",
+    "eventTimestamp",
+    "vehicleId",
+    "area",
+    "TPStatus"
+  ]
+}
