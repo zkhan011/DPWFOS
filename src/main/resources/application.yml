@@ -1,0 +1,84 @@
+server:
+  port: 8443
+  shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+spring:
+  application:
+    name: fos-integration
+  lifecycle:
+    timeout-per-shutdown-phase: 35s
+  datasource:
+    url: ${FOS_DB_URL}
+    username: ${FOS_DB_USER}
+    password: ${FOS_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 16
+      connection-timeout: 3000
+  flyway:
+    enabled: ${FOS_MIGRATE:false}
+    user: ${FOS_MIGRATION_USER:}
+    password: ${FOS_MIGRATION_PASSWORD:}
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+      fail-on-trailing-tokens: true
+  kafka:
+    bootstrap-servers: ${FOS_KAFKA_BOOTSTRAP:localhost:9092}
+    consumer:
+      group-id: ${FOS_KAFKA_GROUP:fos-local-v1}
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+      max-poll-records: 50
+    listener:
+      ack-mode: manual_immediate
+      concurrency: 1
+      missing-topics-fatal: true
+    properties:
+      security.protocol: ${FOS_KAFKA_PROTOCOL:PLAINTEXT}
+management:
+  server:
+    port: 8444
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db
+        liveness:
+          include: livenessState
+logging:
+  structured:
+    format:
+      console: ecs
+fos:
+  production: true
+  dev-auth: false
+  contract-approved: false
+  max-bytes: 262144
+  max-identifier: 128
+  max-operator-name: 256
+  max-operation-age: 60s
+  max-future-skew: 30s
+  lease-duration: 45s
+  request-timeout: 10s
+  max-attempts: 8
+  concurrency-per-target: 4
+  audience: ${FOS_JWT_AUDIENCE:fos-api}
+  workers:
+    enabled: false
+  kafka:
+    enabled: false
+    yard-topic: fos.fms.vehicle-yard-event.v1
+    operation-topic: fos.fms.vehicle-operation-status.v1
+  retention:
+    enabled: false

@@ -1,0 +1,41 @@
+server:
+  address: 127.0.0.1
+  port: 8080
+management:
+  server:
+    address: 127.0.0.1
+    port: 8081
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/fos
+    username: fos
+    password: ${FOS_LOCAL_DB_PASSWORD}
+  flyway:
+    enabled: true
+    user: fos
+    password: ${FOS_LOCAL_DB_PASSWORD}
+fos:
+  production: false
+  dev-auth: true
+  local-password: ${FOS_LOCAL_PASSWORD}
+  principals:
+    tos-local: TOS
+    fms-local: FMS
+  allowed-hosts: [localhost,127.0.0.1]
+  workers:
+    enabled: true
+  kafka:
+    enabled: true
+  targets:
+    vehicle-job:
+      url: http://localhost:8090/vehicle-job
+      idempotency-confirmed: true
+    vehicle-login-logout:
+      url: http://localhost:8090/vehicle-login-logout
+      idempotency-confirmed: true
+    vehicle-yard-event:
+      url: http://localhost:8090/vehicle-yard-event
+      idempotency-confirmed: true
+    vehicle-operation-status:
+      url: http://localhost:8090/vehicle-operation-status
+      idempotency-confirmed: true

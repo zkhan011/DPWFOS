@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "msgId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "eventTimestamp": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "format": "date-time"
+    },
+    "vehicleId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "action": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "enum": [
+        "IN",
+        "OUT"
+      ]
+    },
+    "userId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "userName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    }
+  },
+  "required": [
+    "msgId",
+    "eventTimestamp",
+    "vehicleId",
+    "action",
+    "userId",
+    "userName"
+  ]
+}
