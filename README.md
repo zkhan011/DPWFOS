@@ -1,60 +1,63 @@
 # DPWFOS
 
-Java 21 / Maven / Spring Boot 3.5.16 middleware for the attached **development-v1** FOS baseline. All four implemented message flows pass through FOS. This is a development implementation, not an approved production release.
+Java 21 / Maven / Spring Boot FOS integration with a **JSP admin console**, **Java TOS/FMS simulator**, and **Java UITV RabbitMQ telemetry bridge**. Version 0.2 packages as an executable **WAR** to support JSP with embedded Tomcat. No external Tomcat or Python runtime is needed.
 
-| Input | Transport into FOS | Receiver |
-|---|---|---|
-| VehicleJob | REST from TOS | FMS REST |
-| VehicleLogin-Logout | REST from FMS | TOS REST |
-| VehicleYardEvent | Kafka from FMS | TOS REST |
-| VehicleOperationStatus | Kafka from FMS | TOS REST (unconfirmed contract gate) |
+## Start the local workspace
 
-No live receivers are configured. Production defaults fail closed. This attachment is version 0.1 dated 4 November; it does not include a JSP frontend or additional message families. See [decisions](docs/decisions.md) before extending its scope.
-
-## Local mock integration
-
-Requires JDK 21, Docker Compose, Python 3, and Maven Central access on first wrapper run.
+Requires JDK 21 and local PostgreSQL/Kafka (Docker Compose setup below). Use only synthetic data with the local profile.
 
 ```bash
-export FOS_LOCAL_DB_PASSWORD='replace-with-a-local-database-password'
-export FOS_LOCAL_PASSWORD='replace-with-a-local-test-password'
+export FOS_LOCAL_DB_PASSWORD='choose-a-local-database-password'
+export FOS_LOCAL_PASSWORD='choose-a-local-password-at-least-16-characters'
 docker compose up -d postgres kafka
 docker compose run --rm topics
-python3 scripts/mock_receiver.py
-# In another terminal with the same local environment variables:
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-Local credentials: `tos-local`, `fms-local`, `support-local`; password comes from `FOS_LOCAL_PASSWORD` (minimum 16 characters). Mock authentication is accepted only with the `local` profile and `fos.production=false`. Loopback-only HTTP is for development. The PostgreSQL volume survives restarts.
+Open **http://localhost:8080/admin**. Local username: **admin**. Password: `FOS_LOCAL_PASSWORD`.
+
+- Enable **TOS / FMS simulator**, enter a reason, refresh, and choose **Run simulation**.
+- Inspect message flow history and durable delivery states in the same console.
+- Paste source telemetry into **UITV transformation preview**; preview works while the bridge is disabled and never publishes.
+- Enable/disable UITV independently after configuring RabbitMQ. See [UITV setup](docs/uitv.md).
+
+Both switches default **off** on first migration and persist in PostgreSQL. Requested state and actual runtime state are shown separately. Changes are audited. Browser mutations require authenticated admin access and CSRF tokens.
+
+## What the simulator exercises
+
+`TOS REST job → FOS durable inbox → mock FMS HTTP acknowledgement → FMS Kafka yard/operation events → FOS durable inbox → mock TOS HTTP acknowledgement`.
+
+Each successful scenario sends one login, one job, one yard event and operation statuses 1–6. Rejection mode returns a nonzero FMS business code and emits no job execution events. The simulator is a Java module, available only in an isolated local configuration with loopback receiver targets. It does not alter live routes. Stop the old Python mock if it was running on port 8090.
+
+The existing contract returns a receipt to TOS and tracks the FMS acknowledgement through the status API. There is no invented production JobResponse callback. FMS execution events return to TOS through the existing contracts.
+
+## UITV bridge
+
+This is a Java port of the supplied Python transformation: fuel/battery aliases and CAN fallback, inclusive 20% thresholds, location mapping, availability flags, current machine timestamp with offset, and array output. It uses RabbitMQ mandatory persistent publishing with confirms; input is acknowledged only after routed output is confirmed. Failed input is requeued with backoff.
+
+Broker address, username, password and TLS mode are external configuration. No credentials from the pasted script are included. See [configuration and behavior](docs/uitv.md).
+
+## Build and test
 
 ```bash
-curl -i -u "tos-local:$FOS_LOCAL_PASSWORD"   -H 'Content-Type: application/json'   --data-binary @contracts/examples/vehicle-job.json   http://localhost:8080/fos/api/v1/inbound/tos/vehicle-jobs
-
-curl -u "tos-local:$FOS_LOCAL_PASSWORD"   'http://localhost:8080/fos/api/v1/messages/RECEIPT_UUID'
-
-curl -u "support-local:$FOS_LOCAL_PASSWORD"   'http://localhost:8080/fos/api/v1/operations/deliveries?page=0&size=25'
+./mvnw test       # Unit tests, Python-parity fixtures, actual embedded-Tomcat JSP/security tests
+./mvnw verify     # Also real PostgreSQL, Kafka, RabbitMQ and simulator round-trip tests; Docker required
+java -jar target/fos-integration-0.2.0.war --spring.profiles.active=local
 ```
 
-Fresh operation events are required for forwarding. Historical fixture timestamps are deliberately preserved and will be held as `EXPIRED`; update a synthetic fixture timestamp explicitly when demonstrating a fresh event.
+CI uploads the WAR, test reports and CycloneDX SBOM. Production contract/security approval, partner SIT, load and HA/DR remain separate release gates. Production admin UI defaults off and requires an externally supplied `{bcrypt}` password hash; simulator availability is forbidden in production.
 
-## Verify and package
+## Contracts and operations
 
-```bash
-./mvnw verify            # unit + real PostgreSQL/Kafka Testcontainers; requires Docker
-./mvnw test              # unit tests only; not full integration verification
-java -jar target/fos-integration-0.1.0.jar --spring.profiles.active=local
-```
+| Message | Input to FOS | Receiver |
+|---|---|---|
+| VehicleJob | TOS REST | FMS REST |
+| VehicleLogin-Logout | FMS REST | TOS REST |
+| VehicleYardEvent | FMS Kafka | TOS REST |
+| VehicleOperationStatus | FMS Kafka | TOS REST (contract approval pending) |
+| UITV telemetry | RabbitMQ queue | RabbitMQ business exchange |
 
-CI runs verification and uploads test reports, executable JAR, and CycloneDX SBOM. Container tests do not silently skip when Docker is absent. Dependency/security scanning and production performance evidence remain release gates.
-
-## Delivery behavior
-
-Acceptance commits inbox and delivery rows before returning `202` or acknowledging Kafka. Unique `(source,message_type,msgId)` identities reject different payloads with `409`. Key-sorted JSON hashes ignore object-key order and formatting; preserve arrays, nulls, string contents, and missing-vs-null distinctions. Accepted integer fields must use integral JSON tokens; `2.0` and `"2"` are rejected. Source timestamp text and original JSON text are forwarded unchanged.
-
-Workers claim with PostgreSQL row locks and generation-fenced leases. Earlier unresolved messages block each source/type/vehicle stream. Downstream matching HTTP 200/code `"0"` completes delivery. HTTP 202 waits for agreed confirmation. Ambiguous outcomes and expired leases require reconciliation. Receiver idempotency is necessary; no exactly-once external effect guarantee is claimed.
-
-## Documentation
-
-- [OpenAPI](contracts/openapi.json), [AsyncAPI](contracts/asyncapi.json), [JSON Schemas](contracts/schemas), [fixtures](contracts/examples)
-- [Architecture](docs/architecture.md), [contract decisions](docs/decisions.md)
-- [Runbook](docs/runbook.md), [security](docs/security.md), [handoff and limitations](docs/handoff.md)
+- [Admin and simulator guide](docs/admin-simulator.md)
+- [UITV Java bridge](docs/uitv.md)
+- [OpenAPI](contracts/openapi.json), [AsyncAPI](contracts/asyncapi.json), [schemas](contracts/schemas)
+- [Architecture](docs/architecture.md), [decisions](docs/decisions.md), [runbook](docs/runbook.md), [security](docs/security.md), [handoff](docs/handoff.md)

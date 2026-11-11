@@ -6,7 +6,7 @@ COPY contracts ./contracts
 RUN mvn -B -ntp package -DskipTests
 FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY --from=build /build/target/fos-integration-0.1.0.jar app.jar
+COPY --from=build /build/target/fos-integration-0.2.0.war app.war
 USER 10001:10001
 EXPOSE 8443 8444
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+ENTRYPOINT ["java","-jar","/app/app.war"]

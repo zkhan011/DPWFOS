@@ -9,7 +9,14 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 @EnableConfigurationProperties(FosProperties.class)
-public class FosApplication {
+public class FosApplication
+    extends org.springframework.boot.web.servlet.support.SpringBootServletInitializer {
+  @Override
+  protected org.springframework.boot.builder.SpringApplicationBuilder configure(
+      org.springframework.boot.builder.SpringApplicationBuilder app) {
+    return app.sources(FosApplication.class);
+  }
+
   public static void main(String[] args) {
     SpringApplication.run(FosApplication.class, args);
   }

@@ -1,12 +1,24 @@
 server:
   port: 8443
   shutdown: graceful
+  tomcat:
+    max-http-form-post-size: 512KB
+  servlet:
+    session:
+      timeout: 20m
+      cookie:
+        http-only: true
+        same-site: strict
   error:
     include-message: never
     include-stacktrace: never
 spring:
   application:
     name: fos-integration
+  mvc:
+    view:
+      prefix: /WEB-INF/views/
+      suffix: .jsp
   lifecycle:
     timeout-per-shutdown-phase: 35s
   datasource:
@@ -33,6 +45,15 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
       max-poll-records: 50
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        delivery.timeout.ms: 15000
+        request.timeout.ms: 10000
+        max.block.ms: 10000
     listener:
       ack-mode: manual_immediate
       concurrency: 1
@@ -82,3 +103,26 @@ fos:
     operation-topic: fos.fms.vehicle-operation-status.v1
   retention:
     enabled: false
+
+  admin:
+    enabled: false
+    username: ${FOS_ADMIN_USER:admin}
+    password-hash: ${FOS_ADMIN_PASSWORD_HASH:}
+  simulator:
+    available: false
+  uitv:
+    available: false
+    host: ${UITV_RABBIT_HOST:localhost}
+    port: ${UITV_RABBIT_PORT:5671}
+    username: ${UITV_RABBIT_USER:}
+    password: ${UITV_RABBIT_PASSWORD:}
+    virtual-host: ${UITV_RABBIT_VHOST:/}
+    tls: ${UITV_RABBIT_TLS:true}
+    input-queue: tenant51.telemetry
+    output-exchange: dpwfms.business.v1
+    routing-key: telemetry.asset.position.v1
+    default-vehicle-type: FUEL
+    default-equipment-type: TRACTOR
+    default-fuel-type: DIESEL
+    low-fuel-threshold: 20
+    low-battery-threshold: 20

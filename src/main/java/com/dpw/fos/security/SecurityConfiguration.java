@@ -18,12 +18,15 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfiguration {
   @Bean
+  @org.springframework.core.annotation.Order(2)
   SecurityFilterChain chain(HttpSecurity http, FosProperties p) throws Exception {
     http.csrf(c -> c.disable())
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             a ->
-                a.requestMatchers("/actuator/health/**", "/actuator/health")
+                a.dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR)
+                    .permitAll()
+                    .requestMatchers("/actuator/health/**", "/actuator/health")
                     .hasAuthority("SCOPE_fos.health")
                     .requestMatchers("/actuator/prometheus")
                     .hasAuthority("SCOPE_fos.metrics")
