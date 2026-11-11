@@ -69,7 +69,13 @@ class UitvRabbitIT {
       GetResponse input = ch.basicGet("input", false);
       assertThrows(IllegalStateException.class, () -> bridge.forward(ch, input, returned));
       ch.basicNack(input.getEnvelope().getDeliveryTag(), false, true);
-      assertEquals(1, ch.queueDeclarePassive("input").getMessageCount());
+      // Requeue is asynchronous in RabbitMQ; observe completion rather than race broker processing.
+      org.awaitility.Awaitility.await()
+          .atMost(5, java.util.concurrent.TimeUnit.SECONDS)
+          .untilAsserted(() -> assertEquals(1, ch.queueDeclarePassive("input").getMessageCount()));
+      GetResponse retried = ch.basicGet("input", true);
+      assertEquals("source-id", retried.getProps().getMessageId());
+      assertTrue(retried.getEnvelope().isRedeliver());
     } finally {
       bridge.stop();
     }
