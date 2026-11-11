@@ -1,0 +1,12 @@
+{
+  "msgId": "YARD-20261022-000001",
+  "eventTimestamp": "2026-10-22T14:10:25.123+04:00",
+  "vehicleId": "T501",
+  "jobId": "JOB202610220001",
+  "eventType": "TZ",
+  "toPosition": {
+    "blockId": "A01",
+    "bay": "01",
+    "laneNo": "01"
+  }
+}

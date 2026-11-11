@@ -1,0 +1,42 @@
+{
+  "msgId": "JOB-20261022-000001",
+  "eventTimestamp": "2026-10-22T14:05:25.123+04:00",
+  "vehicleId": "T501",
+  "seqNo": "1",
+  "jobId": "1234567",
+  "jobType": "LOAD",
+  "jobAction": "LOAD",
+  "jobState": "DISPATCH",
+  "jobDetails": [
+    {
+      "container": {
+        "cntrNo": "AWSU1234567",
+        "cntrIso": "42G1",
+        "vehiclePos": "F",
+        "weight": 28500
+      },
+      "fromPosition": {
+        "type": "YARD",
+        "yardPosition": {
+          "blockId": "A01",
+          "bay": "05",
+          "laneNo": "02"
+        },
+        "cranePosition": null
+      },
+      "toPosition": {
+        "type": "QC",
+        "yardPosition": null,
+        "cranePosition": {
+          "QCId": "QC01",
+          "bay": "32",
+          "laneNo": "01"
+        }
+      },
+      "conePlan": "AUTO_TWIST_CONE",
+      "pow": "QC01",
+      "twinFlag": "N"
+    }
+  ],
+  "vesselVisit": "VESSEL-20261022-001"
+}

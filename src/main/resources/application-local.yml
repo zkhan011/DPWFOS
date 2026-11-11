@@ -39,3 +39,13 @@ fos:
     vehicle-operation-status:
       url: http://localhost:8090/vehicle-operation-status
       idempotency-confirmed: true
+
+  admin:
+    enabled: true
+  simulator:
+    available: true
+    password: ${FOS_LOCAL_PASSWORD}
+    api-base-url: http://127.0.0.1:8080
+    port: 8090
+  uitv:
+    available: true

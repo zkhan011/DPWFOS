@@ -20,4 +20,4 @@ All entries are **UNCONFIRMED**. Owners below describe required roles, not named
 
 The selected Spring Boot 3.5.16 supports Java 21 and Maven >=3.6.3 per [official requirements](https://docs.spring.io/spring-boot/3.5/system-requirements.html); this project requires Maven >=3.9. Runtime support/security acceptance by DPW remains D09, including a current dependency scan.
 
-A previous conversation referenced a JSP frontend and a newer workbook. They are not incorporated by this older attachment. Confirm the newer plan and message inventory before adding UI or expanding beyond these four contracts.
+The 11 November extension adds the requested JSP admin interface, isolated Java simulator and Java UITV bridge. The newer workbook message inventory still needs reconciliation before expanding the four existing TOS business contracts.

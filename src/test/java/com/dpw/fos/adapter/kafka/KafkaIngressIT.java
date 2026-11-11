@@ -18,7 +18,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.*;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.*;
-import org.testcontainers.kafka.KafkaContainer;
+import org.testcontainers.kafka.ConfluentKafkaContainer;
 
 @Testcontainers
 @ActiveProfiles("local")
@@ -28,13 +28,16 @@ import org.testcontainers.kafka.KafkaContainer;
     properties = {
       "management.server.port=0",
       "fos.workers.enabled=false",
+      "fos.simulator.available=false",
+      "fos.admin.enabled=false",
       "fos.local-password=integration-test-only-password"
     })
 class KafkaIngressIT {
   @Container
   static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16.6-alpine");
 
-  @Container static KafkaContainer kafka = new KafkaContainer("apache/kafka:3.9.0");
+  @Container
+  static ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:7.7.1");
 
   @DynamicPropertySource
   static void props(DynamicPropertyRegistry p) {

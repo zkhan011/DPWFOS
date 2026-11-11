@@ -39,5 +39,14 @@ services:
         for topic in fos.fms.vehicle-yard-event.v1 fos.fms.vehicle-operation-status.v1; do
           /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:19092 --create --if-not-exists --topic "$$topic" --partitions 6 --replication-factor 1 --config retention.ms=259200000
         done
+  rabbitmq:
+    image: rabbitmq:4.1.4-management-alpine
+    ports: ["127.0.0.1:5672:5672", "127.0.0.1:15672:15672"]
+    environment:
+      RABBITMQ_DEFAULT_USER: ${UITV_RABBIT_USER:-fos-demo}
+      RABBITMQ_DEFAULT_PASS: ${UITV_RABBIT_PASSWORD:-}
+    profiles: [uitv]
+    volumes: ["fos-rabbit:/var/lib/rabbitmq"]
 volumes:
+  fos-rabbit:
   fos-db:

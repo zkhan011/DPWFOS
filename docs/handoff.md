@@ -2,7 +2,7 @@
 
 ## Implemented
 
-- One Java 21 / Maven / Spring Boot executable JAR with separated packages.
+- One Java 21 / Maven / Spring Boot executable WAR with embedded Tomcat/JSP and separated packages.
 - Four strict development contracts, canonical hashes, raw payload/source timestamp preservation, schema/examples and OpenAPI/AsyncAPI.
 - REST job/session acceptance, source-owned receipts, paginated metadata and restricted audited replay.
 - Flyway/PostgreSQL inbox/delivery/attempt/quarantine/audit/replay/ordering tables; atomic acceptance and uniqueness handling.
@@ -10,7 +10,7 @@
 - Row-lock head-of-line claims, generation fencing, bounded per-receiver pools, simple circuit cooldown, outcome classification and receiver-idempotency-aware retries.
 - Operation-status freshness hold, unknown and remote-accepted hold, conservative replay eligibility, payload-only purge preserving tombstones.
 - JWT issuer/audience/scopes/source mapping, local-only mock identities, trusted receiver allowlist, fail-closed production configuration.
-- Local PostgreSQL/Kafka Compose, loopback mock receiver, Dockerfile, CI tests/JAR/SBOM, runbook and decision/security registers.
+- Local PostgreSQL/Kafka Compose, loopback mock receiver, Dockerfile, CI tests/WAR/SBOM, runbook and decision/security registers.
 
 ## Source layout
 
@@ -32,7 +32,7 @@ No integration test is annotated to silently skip without Docker. CI is configur
 
 ## Outstanding before production
 
-- D01–D11 approval, partner schemas/response table and the intended newer-workbook/JSP scope.
+- D01–D11 approval, partner schemas/response table and the intended newer-workbook scope.
 - Counterpart confirmation/reconciliation protocol and API for UNKNOWN/REMOTE_ACCEPTED/held stream resolution.
 - Human identity/DPWUM integration, viewer/admin/auditor experience and configuration change workflow.
 - Token acquisition/rotation, cluster-wide admission/rate limits, enhanced capacity gauges, dashboards/alerts and retry-expiry policy for jobs/sessions.
@@ -43,3 +43,10 @@ No integration test is annotated to silently skip without Docker. CI is configur
 - Demonstrated database backup/restore, failover, RPO/RTO, rollout/rollback and support ownership.
 
 These are real gaps; the repository is a reviewable development implementation, not completion of partner SIT/UAT or the eight-week multi-team delivery program. The attachment's 68 person-day estimate remains unchanged: 28 FOS implementation, 22 shared, 18 counterpart work. No live deployment or receiver contact was performed.
+
+
+## 11 November extension
+
+Added session/CSRF-protected JSP admin console, persisted and audited simulator/UITV switches, isolated Java TOS/FMS simulator, Java UITV transformation/confirmed RabbitMQ publishing, and executable WAR packaging. Local unit/server tests: 54 passed, including 24 Python-parity golden cases and actual Jasper-rendered pages. Added real Kafka simulator round-trip and RabbitMQ confirmation integration tests for Docker-capable CI. See PR checks for final integration results.
+
+The original CI Kafka failure was an advertised-listener incompatibility between the Apache 3.9 image and the Testcontainers bootstrap; the test fixture now uses ConfluentKafkaContainer with its compatible image. The source broker credentials were not copied and no live broker was contacted.

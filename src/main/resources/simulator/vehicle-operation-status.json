@@ -1,0 +1,15 @@
+{
+  "msgId": "OPS-20261022-000001",
+  "eventTimestamp": "2026-10-22T14:12:25.123+04:00",
+  "vehicleId": "T501",
+  "area": {
+    "type": "YARD",
+    "toPosition": {
+      "blockId": "A01",
+      "bay": "12",
+      "laneNo": "03"
+    }
+  },
+  "craneId": "RMG01",
+  "TPStatus": 2
+}

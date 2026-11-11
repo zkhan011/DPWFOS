@@ -1,0 +1,1142 @@
+[
+  {
+    "name": "minimal",
+    "input": {},
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "TRACTOR",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "zeroFuel",
+    "input": {
+      "FuelLevel": 0
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "TRACTOR",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": 0.0,
+        "LowFuel": true,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": true,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "zeroBattery",
+    "input": {
+      "EnergySource": "ELEC",
+      "BatterySoC": "0%"
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "ELECTRIC",
+        "EquipmentType": "TRACTOR",
+        "FuelType": null,
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": 0.0,
+        "LowBattery": true,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "threshold",
+    "input": {
+      "EnergySource": "EV",
+      "BatterySoC": 20
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "ELECTRIC",
+        "EquipmentType": "TRACTOR",
+        "FuelType": null,
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": 20.0,
+        "LowBattery": true,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "overThreshold",
+    "input": {
+      "EnergySource": "EV",
+      "BatterySoC": 20.1
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "ELECTRIC",
+        "EquipmentType": "TRACTOR",
+        "FuelType": null,
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": 20.1,
+        "LowBattery": false,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "electricWins",
+    "input": {
+      "EnergySource": "ELEC",
+      "VehicleType": "FUEL",
+      "BatterySoC": 60,
+      "FuelLevel": 55,
+      "FuelConsumptionRate": 8,
+      "TotalFuelUsed": 20
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "ELECTRIC",
+        "EquipmentType": "TRACTOR",
+        "FuelType": null,
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": 60.0,
+        "LowBattery": false,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "fallbackEnergy",
+    "input": {
+      "EnergySource": "OTHER",
+      "VehicleType": "EV",
+      "BatteryVoltage": 24
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "ELECTRIC",
+        "EquipmentType": "TRACTOR",
+        "FuelType": null,
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": 24,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "namedCan",
+    "input": {
+      "CANParameters": [
+        {
+          "Name": "Fuel Level",
+          "Value": "19%"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "TRACTOR",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": 19.0,
+        "LowFuel": true,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": true,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": [
+          {
+            "Name": "Fuel Level",
+            "Value": "19%"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "parameterCan",
+    "input": {
+      "EnergySource": "ELEC",
+      "CANParameters": [
+        {
+          "ParameterName": "BatterySoC",
+          "ParameterValue": "46"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "ELECTRIC",
+        "EquipmentType": "TRACTOR",
+        "FuelType": null,
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": 46.0,
+        "LowBattery": false,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": [
+          {
+            "ParameterName": "BatterySoC",
+            "ParameterValue": "46"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "canObject",
+    "input": {
+      "EnergySource": "EV",
+      "CANParameters": {
+        "SOC": 80
+      }
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "ELECTRIC",
+        "EquipmentType": "TRACTOR",
+        "FuelType": null,
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": 80.0,
+        "LowBattery": false,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": {
+          "SOC": 80
+        }
+      }
+    ]
+  },
+  {
+    "name": "invalidTopFallback",
+    "input": {
+      "FuelLevel": 101,
+      "CANParameters": {
+        "FuelLevelPercent": 35
+      }
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "TRACTOR",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": 35.0,
+        "LowFuel": false,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": true,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": {
+          "FuelLevelPercent": 35
+        }
+      }
+    ]
+  },
+  {
+    "name": "priority",
+    "input": {
+      "BatterySoC": 30,
+      "StateOfCharge": 60,
+      "EnergySource": "EV"
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "ELECTRIC",
+        "EquipmentType": "TRACTOR",
+        "FuelType": null,
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": 30.0,
+        "LowBattery": false,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "booleanInvalid",
+    "input": {
+      "FuelLevel": true
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "TRACTOR",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "nonfiniteInvalid",
+    "input": {
+      "BatterySoC": "NaN",
+      "EnergySource": "EV"
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "ELECTRIC",
+        "EquipmentType": "TRACTOR",
+        "FuelType": null,
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "negativeInvalid",
+    "input": {
+      "FuelLevel": -1
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "TRACTOR",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "t1",
+    "input": {
+      "Location": {
+        "LocationName": "Engineering T1"
+      }
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "TRACTOR",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "InsideDefinedLocation",
+          "LocationType": "T1",
+          "LocationName": "Terminal 1",
+          "LocationCode": "T1"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "t2",
+    "input": {
+      "Location": {
+        "LocationName": "Operation T2"
+      }
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "TRACTOR",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "InsideDefinedLocation",
+          "LocationType": "T2",
+          "LocationName": "Terminal 2",
+          "LocationCode": "T2"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "t3",
+    "input": {
+      "Location": {
+        "LocationName": "Operation T3"
+      }
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "TRACTOR",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "InsideDefinedLocation",
+          "LocationType": "T3",
+          "LocationName": "Terminal 3",
+          "LocationCode": "T3"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "mapped",
+    "input": {
+      "Location": {
+        "LocationName": "General Cargo",
+        "LocationCode": "GC",
+        "LocationMappingStatus": "Mapped",
+        "LocationType": "CUSTOM"
+      }
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "TRACTOR",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "Mapped",
+          "LocationType": "CUSTOM",
+          "LocationName": "General Cargo",
+          "LocationCode": "GC"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "normalized",
+    "input": {
+      "Location": {
+        "LocationName": "Given",
+        "LocationCode": "L",
+        "LocationMappingStatus": "INSIDEDEFINEDLOCATION",
+        "LocationType": "T2"
+      }
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "TRACTOR",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "InsideDefinedLocation",
+          "LocationType": "T2",
+          "LocationName": "Given",
+          "LocationCode": "L"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "outside",
+    "input": {
+      "Location": "invalid"
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "TRACTOR",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "availability",
+    "input": {
+      "FuelLevel": 10,
+      "DataAvailabilityFlag": {
+        "FuelDataAvailable": false,
+        "GPSAvailable": true,
+        "Extra": true
+      }
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "TRACTOR",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": 10.0,
+        "LowFuel": true,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": true,
+          "FuelDataAvailable": true,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false,
+          "Extra": true
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "unicode",
+    "input": {
+      "Make": "شاحنة",
+      "EquipmentType": "ECH",
+      "AssetNumber": "00012",
+      "LastUpdatedTime": "2020-01-01T00:00:00Z"
+    },
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": "00012",
+        "Make": "شاحنة",
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "ECH",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": "2020-01-01T00:00:00Z",
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  },
+  {
+    "name": "batch",
+    "input": [
+      {
+        "EnergySource": "EV",
+        "BatterySoC": 70
+      },
+      {
+        "FuelLevel": 80
+      }
+    ],
+    "expected": [
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "ELECTRIC",
+        "EquipmentType": "TRACTOR",
+        "FuelType": null,
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": 70.0,
+        "LowBattery": false,
+        "FuelLevelPercent": null,
+        "LowFuel": null,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": false,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      },
+      {
+        "AssetID": null,
+        "AssetNumber": null,
+        "Make": null,
+        "Model": null,
+        "VehicleType": "FUEL",
+        "EquipmentType": "TRACTOR",
+        "FuelType": "DIESEL",
+        "Timestamp": "2026-11-11T09:00:00+04:00",
+        "LastUpdatedTime": null,
+        "Latitude": null,
+        "Longitude": null,
+        "Speed": null,
+        "BatteryVoltage": null,
+        "BatteryLevelPercent": null,
+        "LowBattery": null,
+        "FuelLevelPercent": 80.0,
+        "LowFuel": false,
+        "FuelConsumptionRate": null,
+        "TotalFuelUsed": null,
+        "EngineHours": null,
+        "Location": {
+          "LocationMappingStatus": "OutsideDefinedLocation",
+          "LocationType": "OUTSIDE",
+          "LocationName": "Outside",
+          "LocationCode": "OUTSIDE"
+        },
+        "DataAvailabilityFlag": {
+          "GPSAvailable": false,
+          "FuelDataAvailable": true,
+          "EngineDataAvailable": false,
+          "CANDataAvailable": false
+        },
+        "CANParameters": []
+      }
+    ]
+  }
+]
