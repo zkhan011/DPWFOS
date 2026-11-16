@@ -10,7 +10,7 @@ public class RuntimeGuard {
   public RuntimeGuard(FosProperties p, Environment e) {
     boolean local = Arrays.asList(e.getActiveProfiles()).contains("local");
     if (p.devAuth() && (!local || p.production()))
-      throw new IllegalStateException("Mock authentication requires local non-production profile");
+      throw new IllegalStateException("Local authentication requires SPRING_PROFILES_ACTIVE=local and fos.production=false");
     if (p.maxBytes() < 1
         || p.maxIdentifier() < 1
         || p.maxIdentifier() > 128

@@ -69,9 +69,9 @@ public class SecurityConfiguration {
   @Bean
   @ConditionalOnProperty(name = "fos.dev-auth", havingValue = "true")
   UserDetailsService mockUsers(Environment env) {
-    String pw = env.getRequiredProperty("fos.local-password");
+    String pw = env.getProperty("fos.local-password", "");
     if (pw.length() < 16)
-      throw new IllegalStateException("Local password must be at least 16 characters");
+      throw new IllegalStateException("Set FOS_LOCAL_PASSWORD to at least 16 characters for local API login");
     var enc =
         org.springframework.security.crypto.factory.PasswordEncoderFactories
             .createDelegatingPasswordEncoder();

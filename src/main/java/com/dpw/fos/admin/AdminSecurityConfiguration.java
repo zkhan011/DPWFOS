@@ -23,11 +23,7 @@ public class AdminSecurityConfiguration {
       throws Exception {
     var encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
     String username = env.getProperty("fos.admin.username", "admin");
-    String hash = env.getProperty("fos.admin.password-hash", "");
-    if (hash.isBlank() && p.devAuth() && !p.production())
-      hash = encoder.encode(env.getRequiredProperty("fos.local-password"));
-    if (!hash.startsWith("{bcrypt}"))
-      throw new IllegalStateException("Admin requires an external {bcrypt} password hash");
+    String hash = AdminPassword.resolve(env, p.devAuth(), p.production(), encoder);
     var users =
         new InMemoryUserDetailsManager(
             User.withUsername(username).password(hash).roles("ADMIN").build());
