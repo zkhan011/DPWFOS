@@ -30,7 +30,50 @@ public class DeliveryRepository {
       int attempt,
       long generation,
       UUID owner,
-      Instant sourceTime) {}
+      Instant sourceTime,
+      String simulatorMode,
+      String simulatorUrl,
+      boolean simulatorIdempotency,
+      String vehicleId) {
+    public Work(
+        UUID id,
+        UUID receipt,
+        MessageType type,
+        String msgId,
+        String payload,
+        int attempt,
+        long generation,
+        UUID owner,
+        Instant sourceTime) {
+      this(
+          id,
+          receipt,
+          type,
+          msgId,
+          payload,
+          attempt,
+          generation,
+          owner,
+          sourceTime,
+          null,
+          null,
+          false,
+          null);
+    }
+  }
+
+  public boolean simulatorReady(Work w) {
+    if (p.production() || !p.devAuth()) return false;
+    return Boolean.TRUE.equals(
+        db.queryForObject(
+            """
+SELECT EXISTS(SELECT 1 FROM vehicle_session WHERE origin=? AND vehicle_id=? AND action='IN')
+AND EXISTS(SELECT 1 FROM module_control WHERE name='simulator' AND enabled)
+""",
+            Boolean.class,
+            w.simulatorMode(),
+            w.vehicleId()));
+  }
 
   public Optional<Work> claim(String target, UUID owner) {
     return tx.execute(
@@ -45,7 +88,12 @@ public class DeliveryRepository {
           var rows =
               db.queryForList(
                   """
-SELECT d.delivery_id FROM delivery d WHERE d.target=? AND d.state IN ('PENDING','RETRY_WAIT') AND d.next_attempt_at<=clock_timestamp()
+SELECT d.delivery_id FROM delivery d WHERE d.target=? AND d.state IN ('PENDING','RETRY_WAIT','WAITING_SESSION') AND d.next_attempt_at<=clock_timestamp()
+AND (d.state<>'WAITING_SESSION' OR (
+ EXISTS(SELECT 1 FROM simulator_dispatch sd JOIN message_inbox mi USING(receipt_id)
+ JOIN vehicle_session vs ON vs.origin=sd.mode AND vs.vehicle_id=mi.vehicle_id
+ WHERE sd.receipt_id=d.receipt_id AND vs.action='IN')
+ AND EXISTS(SELECT 1 FROM module_control WHERE name='simulator' AND enabled)))
 AND NOT EXISTS(SELECT 1 FROM delivery h WHERE h.stream_key=d.stream_key AND h.sequence<d.sequence AND h.state<>'DELIVERED')
 ORDER BY d.next_attempt_at,d.delivery_id FOR UPDATE OF d SKIP LOCKED LIMIT 1
 """,
@@ -63,8 +111,8 @@ ORDER BY d.next_attempt_at,d.delivery_id FOR UPDATE OF d SKIP LOCKED LIMIT 1
           return Optional.of(
               db.queryForObject(
                   """
-SELECT d.delivery_id,i.receipt_id,i.message_type,i.msg_id,i.raw_payload,d.attempt_count,d.lease_generation,i.source_timestamp
-FROM delivery d JOIN message_inbox i USING(receipt_id) WHERE d.delivery_id=?
+SELECT d.delivery_id,i.receipt_id,i.message_type,i.msg_id,i.raw_payload,d.attempt_count,d.lease_generation,i.source_timestamp,s.mode,s.destination,s.idempotency_confirmed,i.vehicle_id
+FROM delivery d JOIN message_inbox i USING(receipt_id) LEFT JOIN simulator_dispatch s USING(receipt_id) WHERE d.delivery_id=?
 """,
                   (rs, n) ->
                       new Work(
@@ -76,7 +124,11 @@ FROM delivery d JOIN message_inbox i USING(receipt_id) WHERE d.delivery_id=?
                           rs.getInt(6),
                           rs.getLong(7),
                           owner,
-                          rs.getTimestamp(8).toInstant()),
+                          rs.getTimestamp(8).toInstant(),
+                          rs.getString(9),
+                          rs.getString(10),
+                          rs.getBoolean(11),
+                          rs.getString(12)),
                   id));
         });
   }

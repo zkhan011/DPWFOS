@@ -7,8 +7,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.*;
 import jakarta.annotation.PreDestroy;
 import java.net.*;
-import java.net.http.*;
-import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -24,11 +22,7 @@ public class SimulatorPlugin {
   private final ObjectMapper mapper;
   private final KafkaTemplate<String, byte[]> kafka;
   private final Environment env;
-  private final HttpClient client =
-      HttpClient.newBuilder()
-          .connectTimeout(Duration.ofSeconds(3))
-          .followRedirects(HttpClient.Redirect.NEVER)
-          .build();
+  private final SimulatorConsole console;
   private final ExecutorService jobs =
       new ThreadPoolExecutor(
           1,
@@ -59,12 +53,14 @@ public class SimulatorPlugin {
       ModuleControl controls,
       ObjectMapper mapper,
       KafkaTemplate<String, byte[]> kafka,
-      Environment env) {
+      Environment env,
+      SimulatorConsole console) {
     this.p = p;
     this.controls = controls;
     this.mapper = mapper;
     this.kafka = kafka;
     this.env = env;
+    this.console = console;
   }
 
   public String getState() {
@@ -118,6 +114,8 @@ public class SimulatorPlugin {
   public void run(int count, String mode) {
     if (!"RUNNING".equals(state) || !controls.enabled("simulator"))
       throw new FosException(409, "SIMULATOR_DISABLED");
+    if (!"SIMULATED".equals(console.settings().get("mode")))
+      throw new FosException(409, "AUTOMATIC_SCENARIOS_REQUIRE_SIMULATED_MODE");
     if (count < 1 || count > 10 || !Set.of("SUCCESS", "REJECT").contains(mode))
       throw new FosException(400, "INVALID_SCENARIO");
     try {
@@ -128,15 +126,14 @@ public class SimulatorPlugin {
               String id = "SIM-" + mode + "-" + UUID.randomUUID(),
                   vehicle = "SIM-" + UUID.randomUUID().toString().substring(0, 8);
               try {
-                post(
-                    "/fos/api/v1/inbound/fms/vehicle-login-logout",
-                    p.fmsUser(),
-                    SimulationPayloads.create(
-                        mapper, "vehicle-login-logout", id + "-LOGIN", vehicle, id));
-                post(
-                    "/fos/api/v1/inbound/tos/vehicle-jobs",
-                    p.tosUser(),
-                    SimulationPayloads.create(mapper, "vehicle-job", id, vehicle, id));
+                console.session(vehicle, "IN", "simulator");
+                var config = console.settings();
+                console.dispatch(
+                    SimulationPayloads.create(mapper, "vehicle-job", id, vehicle, id).toString(),
+                    "SIMULATED",
+                    ((Number) config.get("revision")).longValue(),
+                    "simulator");
+                event("TOS → FOS job", id, "ACCEPTED");
               } catch (Exception e) {
                 event("Scenario", id, "FAILED: " + e.getClass().getSimpleName());
               }
@@ -149,27 +146,6 @@ public class SimulatorPlugin {
 
   private boolean active() {
     return server != null && controls.enabled("simulator");
-  }
-
-  private void post(String path, String user, ObjectNode payload) throws Exception {
-    if (!active()) return;
-    String auth =
-        Base64.getEncoder()
-            .encodeToString((user + ":" + p.password()).getBytes(StandardCharsets.UTF_8));
-    var request =
-        HttpRequest.newBuilder(URI.create(p.apiBaseUrl() + path))
-            .timeout(Duration.ofSeconds(10))
-            .header("Content-Type", "application/json")
-            .header("Authorization", "Basic " + auth)
-            .POST(HttpRequest.BodyPublishers.ofByteArray(mapper.writeValueAsBytes(payload)))
-            .build();
-    var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-    event(
-        path.contains("tos/") ? "TOS → FOS job" : "FMS → FOS login",
-        payload.path("msgId").asText(),
-        "HTTP " + response.statusCode());
-    if (response.statusCode() != 200 && response.statusCode() != 202)
-      throw new IllegalStateException("Ingress rejected");
   }
 
   private void receive(HttpExchange exchange) throws java.io.IOException {
@@ -199,7 +175,8 @@ public class SimulatorPlugin {
       }
       JsonNode body = mapper.readTree(bytes);
       String id = body.path("msgId").asText();
-      if (!id.startsWith("SIM-") || !body.path("vehicleId").asText().startsWith("SIM-")) {
+      if (path.equals("/vehicle-job")
+          && (!id.startsWith("SIM-") || !body.path("vehicleId").asText().startsWith("SIM-"))) {
         reply(exchange, 400, id, "SIMULATED_IDS_REQUIRED");
         return;
       }

@@ -67,7 +67,9 @@ public class DeliveryWorkers {
               w -> {
                 long start = System.nanoTime();
                 Outcome o;
-                if (w.type() == MessageType.OPERATION_STATUS
+                if (w.simulatorMode() != null && !repo.simulatorReady(w))
+                  o = Outcome.of("WAITING_SESSION", "SIMULATOR_DISABLED_OR_VEHICLE_LOGGED_OUT");
+                else if (w.type() == MessageType.OPERATION_STATUS
                     && w.sourceTime().isBefore(Instant.now().minus(p.maxOperationAge())))
                   o = Outcome.of("EXPIRED", "STALE_OPERATION_STATUS");
                 else o = client.send(w);

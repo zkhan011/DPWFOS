@@ -21,6 +21,14 @@ public class InboxRepository {
       UUID receiptId, String msgId, String source, String state, String outcome) {}
 
   public Receipt accept(MessageType type, Validated v, String metadata) {
+    return accept(type, v, metadata, "REAL");
+  }
+
+  public Receipt acceptSimulatedSession(Validated v) {
+    return accept(MessageType.LOGIN_LOGOUT, v, "{\"transport\":\"SIMULATOR\"}", "SIMULATED");
+  }
+
+  private Receipt accept(MessageType type, Validated v, String metadata, String origin) {
     return tx.execute(
         s -> {
           UUID id = UUID.randomUUID();
@@ -54,6 +62,7 @@ VALUES(?,?,?,?,?,?,?,?,?::jsonb,?,?::jsonb,'development-v1') ON CONFLICT(source,
               throw new FosException(409, "IDENTITY_CONFLICT");
             return get((UUID) existing.get("receipt_id"));
           }
+          if (type == MessageType.LOGIN_LOGOUT) recordSession(id, v, origin);
           String stream = type.source + ":" + type.name() + ":" + v.vehicleId();
           db.update(
               "INSERT INTO ordering_stream(stream_key) VALUES(?) ON CONFLICT DO NOTHING", stream);
@@ -73,6 +82,44 @@ VALUES(?,?,?,?,?,?,?,?,?::jsonb,?,?::jsonb,'development-v1') ON CONFLICT(source,
               seq);
           return get(id);
         });
+  }
+
+  private void recordSession(UUID id, Validated v, String origin) {
+    // Serialize login/logout and console dispatch checks for the same vehicle.
+    db.queryForObject(
+        "SELECT pg_advisory_xact_lock(hashtextextended(?,0)) IS NULL",
+        Boolean.class,
+        "session:" + origin + ":" + v.vehicleId());
+    String action = v.json().path("action").asText();
+    String user = v.json().path("userId").asText(), name = v.json().path("userName").asText();
+    db.update(
+        """
+INSERT INTO vehicle_session_event(receipt_id,origin,vehicle_id,action,user_id,user_name,event_time)
+VALUES(?,?,?,?,?,?,?)
+""",
+        id,
+        origin,
+        v.vehicleId(),
+        action,
+        user,
+        name,
+        v.time());
+    db.update(
+        """
+INSERT INTO vehicle_session(origin,vehicle_id,action,user_id,user_name,event_time,receipt_id)
+VALUES(?,?,?,?,?,?,?) ON CONFLICT(origin,vehicle_id) DO UPDATE SET
+action=EXCLUDED.action,user_id=EXCLUDED.user_id,user_name=EXCLUDED.user_name,
+event_time=EXCLUDED.event_time,received_at=clock_timestamp(),receipt_id=EXCLUDED.receipt_id
+WHERE EXCLUDED.event_time>vehicle_session.event_time
+   OR (EXCLUDED.event_time=vehicle_session.event_time AND EXCLUDED.action='OUT')
+""",
+        origin,
+        v.vehicleId(),
+        action,
+        user,
+        name,
+        v.time(),
+        id);
   }
 
   public Receipt get(UUID id) {

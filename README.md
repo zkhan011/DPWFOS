@@ -25,6 +25,9 @@ Open **http://localhost:8080/admin**. Local username: **admin**. Password: `FOS_
 
 Both switches default **off** on first migration and persist in PostgreSQL. Requested state and actual runtime state are shown separately. Changes are audited. Browser mutations require authenticated admin access and CSRF tokens.
 
+See [live payload editing and real FMS setup](docs/simulator-real-fms.md) for the new
+manual dispatch panel, vehicle login/logout feed, and destination switching.
+
 ## What the simulator exercises
 
 `TOS REST job → FOS durable inbox → mock FMS HTTP acknowledgement → FMS Kafka yard/operation events → FOS durable inbox → mock TOS HTTP acknowledgement`.

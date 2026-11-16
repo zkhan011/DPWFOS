@@ -43,6 +43,7 @@ class AdminPagesTest {
   @MockBean InboxRepository inbox;
   @MockBean SimulatorPlugin simulator;
   @MockBean UitvBridge bridge;
+  @MockBean com.dpw.fos.simulator.SimulatorConsole console;
   @MockBean JdbcTemplate jdbc;
   @MockBean TransactionTemplate transaction;
   HttpClient client;
@@ -105,6 +106,30 @@ class AdminPagesTest {
                 + URLEncoder.encode(token, java.nio.charset.StandardCharsets.UTF_8));
     assertEquals(302, result.statusCode());
     return csrf(get("/admin").body());
+  }
+
+  @Test
+  void liveConsoleRequiresLoginAndCsrfAndRendersEditor() throws Exception {
+    assertEquals(302, get("/admin/simulator/console/status").statusCode());
+    String token = signIn();
+    String html = get("/admin").body();
+    assertTrue(html.contains("id=\"job-payload\""));
+    assertTrue(html.contains("id=\"vehicle-status\""));
+    assertTrue(html.contains("simulator.js"));
+    assertEquals(
+        403,
+        post("/admin/simulator/console/dispatch", "payload={}&mode=REAL&revision=0").statusCode());
+    verify(console, never()).dispatch(anyString(), anyString(), anyLong(), anyString());
+    when(console.snapshot()).thenReturn(Map.of("vehicles", List.of(), "events", List.of()));
+    assertEquals(200, get("/admin/simulator/console/status").statusCode());
+    assertEquals(
+        200,
+        post(
+                "/admin/simulator/console/session",
+                "vehicle=SIM-1&action=IN&_csrf="
+                    + URLEncoder.encode(token, java.nio.charset.StandardCharsets.UTF_8))
+            .statusCode());
+    verify(console).session("SIM-1", "IN", "admin");
   }
 
   @Test

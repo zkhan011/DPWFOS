@@ -47,6 +47,8 @@ fos:
     password-hash: ${FOS_LOCAL_ADMIN_PASSWORD_HASH:}
   simulator:
     available: true
+    real-fms-allowed-hosts: ${FOS_SIMULATOR_FMS_HOSTS:localhost,127.0.0.1}
+    real-fms-bearer-token: ${FOS_SIMULATOR_FMS_TOKEN:}
     password: ${FOS_LOCAL_PASSWORD:}
     api-base-url: http://127.0.0.1:8080
     port: 8090
