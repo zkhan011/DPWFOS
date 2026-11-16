@@ -29,6 +29,10 @@ import org.springframework.transaction.support.TransactionTemplate;
       "fos.simulator.available=false",
       "fos.uitv.available=false",
       "fos.admin.enabled=true",
+      "fos.admin.username=admin",
+      "fos.admin.password-hash=",
+      "fos.production=false",
+      "fos.dev-auth=true",
       "fos.local-password=admin-test-password-only",
       "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration,org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration"
     })

@@ -7,17 +7,17 @@ management:
     port: 8081
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/fos
-    username: fos
-    password: ${FOS_LOCAL_DB_PASSWORD}
+    url: ${FOS_DB_URL:jdbc:postgresql://localhost:5432/fos}
+    username: ${FOS_DB_USER:fos}
+    password: ${FOS_DB_PASSWORD:${FOS_LOCAL_DB_PASSWORD:}}
   flyway:
     enabled: true
-    user: fos
-    password: ${FOS_LOCAL_DB_PASSWORD}
+    user: ${FOS_MIGRATION_USER:${FOS_DB_USER:fos}}
+    password: ${FOS_MIGRATION_PASSWORD:${FOS_DB_PASSWORD:${FOS_LOCAL_DB_PASSWORD:}}}
 fos:
   production: false
   dev-auth: true
-  local-password: ${FOS_LOCAL_PASSWORD}
+  local-password: ${FOS_LOCAL_PASSWORD:}
   principals:
     tos-local: TOS
     fms-local: FMS
@@ -42,10 +42,13 @@ fos:
 
   admin:
     enabled: true
+    username: ${FOS_ADMIN_USER:admin}
+    # Local login uses FOS_LOCAL_PASSWORD unless explicitly overridden here.
+    password-hash: ${FOS_LOCAL_ADMIN_PASSWORD_HASH:}
   simulator:
     available: true
-    password: ${FOS_LOCAL_PASSWORD}
+    password: ${FOS_LOCAL_PASSWORD:}
     api-base-url: http://127.0.0.1:8080
     port: 8090
   uitv:
-    available: true
+    available: false

@@ -2,7 +2,7 @@
 
 ## Start and observe
 
-Follow README for loopback mocks. `./mvnw verify` needs Docker for PostgreSQL and Kafka tests. `docker compose down` stops dependencies without deleting the named database volume. Do not use `down -v` as a recovery procedure.
+Follow README for loopback mocks. `./mvnw verify` builds without Docker; `./mvnw verify -Pdocker-it` runs the optional container integration tests. See [Windows local setup](local-windows.md). `docker compose down` stops dependencies without deleting the named database volume. Do not use `down -v` as a recovery procedure.
 
 Local health: `curl -u "support-local:$FOS_LOCAL_PASSWORD" http://localhost:8081/actuator/health/readiness`. Readiness checks durable DB capability; a temporary downstream outage does not make ingress unready. Liveness checks local application state. Health details are hidden. Configure authenticated probes and internal-only ingress in production.
 

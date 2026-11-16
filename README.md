@@ -4,14 +4,16 @@ Java 21 / Maven / Spring Boot FOS integration with a **JSP admin console**, **Ja
 
 ## Start the local workspace
 
-Requires JDK 21 and local PostgreSQL/Kafka (Docker Compose setup below). Use only synthetic data with the local profile.
+Requires JDK 21 and locally installed PostgreSQL/Kafka. Docker is not required.
+See [Windows and Eclipse setup](docs/local-windows.md) for database creation,
+Kafka startup, environment settings, and troubleshooting. Use only synthetic data.
 
-```bash
-export FOS_LOCAL_DB_PASSWORD='choose-a-local-database-password'
-export FOS_LOCAL_PASSWORD='choose-a-local-password-at-least-16-characters'
-docker compose up -d postgres kafka
-docker compose run --rm topics
-./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+```bat
+set "FOS_DB_USER=fos"
+set "FOS_DB_PASSWORD=your-existing-database-password"
+set "FOS_LOCAL_PASSWORD=choose-at-least-16-characters"
+mvnw.cmd clean verify
+mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
 Open **http://localhost:8080/admin**. Local username: **admin**. Password: `FOS_LOCAL_PASSWORD`.
@@ -19,7 +21,7 @@ Open **http://localhost:8080/admin**. Local username: **admin**. Password: `FOS_
 - Enable **TOS / FMS simulator**, enter a reason, refresh, and choose **Run simulation**.
 - Inspect message flow history and durable delivery states in the same console.
 - Paste source telemetry into **UITV transformation preview**; preview works while the bridge is disabled and never publishes.
-- Enable/disable UITV independently after configuring RabbitMQ. See [UITV setup](docs/uitv.md).
+- Set `fos.uitv.available=true` and enable/disable UITV after configuring RabbitMQ. See [UITV setup](docs/uitv.md).
 
 Both switches default **off** on first migration and persist in PostgreSQL. Requested state and actual runtime state are shown separately. Changes are audited. Browser mutations require authenticated admin access and CSRF tokens.
 
@@ -41,11 +43,12 @@ Broker address, username, password and TLS mode are external configuration. No c
 
 ```bash
 ./mvnw test       # Unit tests, Python-parity fixtures, actual embedded-Tomcat JSP/security tests
-./mvnw verify     # Also real PostgreSQL, Kafka, RabbitMQ and simulator round-trip tests; Docker required
+./mvnw verify     # Unit tests and WAR/SBOM; no Docker required
+./mvnw verify -Pdocker-it # Optional container integration tests (CI runs these)
 java -jar target/fos-integration-0.2.0.war --spring.profiles.active=local
 ```
 
-CI uploads the WAR, test reports and CycloneDX SBOM. Production contract/security approval, partner SIT, load and HA/DR remain separate release gates. Production admin UI defaults off and requires an externally supplied `{bcrypt}` password hash; simulator availability is forbidden in production.
+CI uploads the WAR, test reports and CycloneDX SBOM. Production contract/security approval, partner SIT, load and HA/DR remain separate release gates. Production admin UI defaults off and requires an externally supplied BCrypt password hash (raw or `{bcrypt}`-prefixed); simulator availability is forbidden in production.
 
 ## Contracts and operations
 
