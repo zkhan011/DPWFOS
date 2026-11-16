@@ -52,8 +52,8 @@ public class AdminSecurityConfiguration {
                 h.contentSecurityPolicy(
                     c ->
                         c.policyDirectives(
-                            "default-src 'self'; style-src 'self'; script-src 'none';"
-                                + " frame-ancestors 'none'; form-action 'self'")));
+                            "default-src 'self'; style-src 'self'; script-src 'self'; connect-src"
+                                + " 'self'; frame-ancestors 'none'; form-action 'self'")));
     // CSRF remains enabled for every browser mutation including login and logout.
     return http.build();
   }

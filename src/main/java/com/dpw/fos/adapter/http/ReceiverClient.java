@@ -16,6 +16,9 @@ public class ReceiverClient {
   private final ObjectMapper mapper;
   private final HttpClient client;
 
+  @org.springframework.beans.factory.annotation.Value("${fos.simulator.real-fms-bearer-token:}")
+  private String realFmsToken = "";
+
   public record Outcome(
       String state, String category, Integer httpCode, String businessCode, Duration delay) {
     public static Outcome of(String state, String category) {
@@ -35,6 +38,14 @@ public class ReceiverClient {
 
   public Outcome send(Work w) {
     var target = p.targets() == null ? null : p.targets().get(w.type().route);
+    if (w.simulatorMode() != null) {
+      if (p.production()) return Outcome.of("QUARANTINED", "SIMULATOR_FORBIDDEN_IN_PRODUCTION");
+      target =
+          new FosProperties.Target(
+              w.simulatorUrl(),
+              "REAL".equals(w.simulatorMode()) ? realFmsToken : null,
+              w.simulatorIdempotency());
+    }
     if (target == null) return Outcome.of("QUARANTINED", "ROUTE_UNCONFIGURED");
     var req =
         HttpRequest.newBuilder(URI.create(target.url()))

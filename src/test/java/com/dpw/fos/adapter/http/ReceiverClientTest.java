@@ -65,6 +65,41 @@ class ReceiverClientTest {
   }
 
   @Test
+  void simulatorSnapshotUsesRealReceiverInsteadOfConfiguredMock() {
+    status = 200;
+    response = "{\"msgId\":\"A\",\"code\":\"0\"}";
+    var base = work();
+    var routed =
+        new Work(
+            base.id(),
+            base.receipt(),
+            base.type(),
+            base.msgId(),
+            base.payload(),
+            1,
+            1,
+            base.owner(),
+            base.sourceTime(),
+            "REAL",
+            "http://localhost:" + server.getAddress().getPort(),
+            false,
+            "TRUCK-1");
+    var receiver =
+        new ReceiverClient(
+            TestProperties.create(
+                Map.of(
+                    "vehicle-job",
+                    new FosProperties.Target(
+                        "http://localhost:1/not-the-destination", null, true))),
+            new ObjectMapper());
+    assertEquals("DELIVERED", receiver.send(routed).state());
+    assertEquals(base.payload(), received);
+    status = 503;
+    response = "unavailable";
+    assertEquals("UNKNOWN", receiver.send(routed).state());
+  }
+
+  @Test
   void onlyMatchingBusinessCompletionIsDelivered() {
     status = 200;
     response = "{\"msgId\":\"A\",\"code\":\"0\"}";
