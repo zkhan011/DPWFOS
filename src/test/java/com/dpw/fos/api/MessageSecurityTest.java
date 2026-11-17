@@ -1,5 +1,6 @@
 package com.dpw.fos.api;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -16,16 +17,23 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(MessageController.class)
+// These tests exercise JWT authorization, independently of local launch settings.
+@WebMvcTest(
+    controllers = MessageController.class,
+    properties = {"fos.dev-auth=false", "fos.admin.enabled=false"})
+@ActiveProfiles("test")
 @Import(SecurityConfiguration.class)
 class MessageSecurityTest {
   @Autowired MockMvc mvc;
+  @Autowired ApplicationContext context;
   @MockBean AcceptanceService acceptance;
   @MockBean InboxRepository repo;
   @MockBean FosProperties p;
@@ -35,6 +43,12 @@ class MessageSecurityTest {
   void init() {
     when(p.principals()).thenReturn(Map.of("tos-client", "TOS", "fms-client", "FMS"));
     when(p.maxBytes()).thenReturn(262144);
+  }
+
+  @Test
+  void jwtTestsNeverCreateLocalPasswordUsers() {
+    assertFalse(context.containsBean("mockUsers"));
+    assertFalse(context.containsBean("adminChain"));
   }
 
   @Test
