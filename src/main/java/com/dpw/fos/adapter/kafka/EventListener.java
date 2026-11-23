@@ -22,18 +22,21 @@ public class EventListener {
   private final JdbcTemplate db;
   private final FosProperties p;
   private final ObjectMapper mapper;
+  private final KafkaMessageLog journal;
 
   public EventListener(
       AcceptanceService acceptance,
       ContractValidator validator,
       JdbcTemplate db,
       FosProperties p,
-      ObjectMapper mapper) {
+      ObjectMapper mapper,
+      KafkaMessageLog journal) {
     this.acceptance = acceptance;
     this.validator = validator;
     this.db = db;
     this.p = p;
     this.mapper = mapper;
+    this.journal = journal;
   }
 
   @KafkaListener(topics = "${fos.kafka.yard-topic}")
@@ -51,13 +54,16 @@ public class EventListener {
     try {
       var v = validator.validate(type, raw);
       if (!v.vehicleId().equals(r.key())) throw new FosException(400, "INVALID_KAFKA_KEY");
-      acceptance.accept(
-          type,
-          raw,
-          mapper.writeValueAsString(
-              Map.of("topic", r.topic(), "partition", r.partition(), "offset", r.offset())));
+      var receipt =
+          acceptance.accept(
+              type,
+              raw,
+              mapper.writeValueAsString(
+                  Map.of("topic", r.topic(), "partition", r.partition(), "offset", r.offset())));
+      journal.record(type, r, receipt.receiptId(), null);
     } catch (FosException e) {
       quarantine(r, raw, e.code);
+      journal.record(type, r, null, e.code);
     } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
       throw new IllegalStateException("Transport metadata serialization failed", e);
     }

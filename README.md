@@ -67,3 +67,7 @@ CI uploads the WAR, test reports and CycloneDX SBOM. Production contract/securit
 - [UITV Java bridge](docs/uitv.md)
 - [OpenAPI](contracts/openapi.json), [AsyncAPI](contracts/asyncapi.json), [schemas](contracts/schemas)
 - [Architecture](docs/architecture.md), [decisions](docs/decisions.md), [runbook](docs/runbook.md), [security](docs/security.md), [handoff](docs/handoff.md)
+
+## Endpoint configuration and message diagnostics
+
+The JSP console now includes **Endpoint settings**, **Message history**, and **Kafka logs**. Configure the four TOS/FMS receiver URLs without restarting, inspect request JSON and receiver responses per delivery attempt, and trace accepted or quarantined Kafka records by topic/partition/offset. See [operations console setup and retention](docs/operations-console.md). Apply Flyway migration V4 before upgrading.

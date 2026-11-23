@@ -156,4 +156,107 @@ class DurableFlowIT {
             b.receiptId()));
     assertEquals(a.receiptId(), accept("done").receiptId());
   }
+
+  @Test
+  void endpointOverridesPersistAndConcurrentEditsAreRejected() {
+    db.update("UPDATE endpoint_setting SET url=NULL,revision=0");
+    var env = new org.springframework.mock.env.MockEnvironment();
+    env.setActiveProfiles("local");
+    var settings =
+        new com.dpw.fos.admin.EndpointSettings(db, tx, TestProperties.create(), env, inbox);
+    settings.save(
+        "vehicle-job", "http://localhost:9999/jobs", true, 0, "UAT endpoint", "admin", false);
+    assertEquals("http://localhost:9999/jobs", settings.resolve("vehicle-job").url());
+    assertThrows(
+        FosException.class,
+        () ->
+            settings.save(
+                "vehicle-job",
+                "http://localhost:8888/jobs",
+                true,
+                0,
+                "stale edit",
+                "admin",
+                false));
+    assertEquals("http://localhost:9999/jobs", settings.resolve("vehicle-job").url());
+    settings.save("vehicle-job", "", false, 1, "reset", "admin", true);
+    assertNull(settings.resolve("vehicle-job"));
+  }
+
+  @Test
+  void historyIncludesResponsesAndKafkaLogsAndHonorsRetentionHold() throws Exception {
+    var receipt = accept("history-test");
+    var w = deliveries.claim("TOS", UUID.randomUUID()).orElseThrow();
+    assertTrue(
+        deliveries.finish(
+            w,
+            Outcome.of("DELIVERED", "COMPLETED")
+                .exchange("https://localhost/login", "{\"code\":\"0\",\"token\":\"hidden\"}", 200),
+            12));
+    var history =
+        new com.dpw.fos.admin.MessageHistory(db, new com.fasterxml.jackson.databind.ObjectMapper());
+    var env = new org.springframework.mock.env.MockEnvironment();
+    env.setActiveProfiles("local");
+    var settings =
+        new com.dpw.fos.admin.EndpointSettings(db, tx, TestProperties.create(), env, inbox);
+    db.update(
+        "UPDATE endpoint_setting SET url='http://localhost:9999/new',idempotency_confirmed=true"
+            + " WHERE route='vehicle-login-logout'");
+    assertEquals("https://localhost/login", settings.resolve(w).url());
+    assertFalse(settings.resolve(w).idempotencyConfirmed());
+    assertEquals(1, history.messages(0, "history-test", "DELIVERED", "TOS").size());
+    assertEquals(0, history.messages(0, "missing", "", "TOS").size());
+    assertTrue(
+        history
+            .detail(receipt.receiptId())
+            .get("display_payload")
+            .toString()
+            .contains("history-test"));
+    assertFalse(
+        history
+            .attempts(receipt.receiptId())
+            .getFirst()
+            .get("display_response")
+            .toString()
+            .contains("hidden"));
+    var log = new com.dpw.fos.adapter.kafka.KafkaMessageLog(db, TestProperties.create(), "test");
+    var record =
+        new org.apache.kafka.clients.consumer.ConsumerRecord<String, byte[]>(
+            "yard", 0, 9, "T501", "{}".getBytes(StandardCharsets.UTF_8));
+    log.record(MessageType.YARD_EVENT, record, receipt.receiptId(), null);
+    log.record(MessageType.YARD_EVENT, record, receipt.receiptId(), null);
+    assertEquals(1, history.kafka(0, "T501", "ACCEPTED", "yard").size());
+    log.record(
+        MessageType.YARD_EVENT,
+        new org.apache.kafka.clients.consumer.ConsumerRecord<>(
+            "yard", 1, 9, "BAD", "invalid".getBytes(StandardCharsets.UTF_8)),
+        null,
+        "INVALID_CONTRACT");
+    assertEquals(1, history.kafka(0, "", "QUARANTINED", "yard").size());
+    db.update("UPDATE kafka_message_log SET received_at=clock_timestamp()-interval '10 days'");
+    db.update("UPDATE delivery_attempt SET attempted_at=clock_timestamp()-interval '10 days'");
+    db.update("UPDATE message_inbox SET legal_hold=true");
+    var retention = new com.dpw.fos.application.OperationsLogRetention(db, 7);
+    retention.purge();
+    assertEquals(
+        1,
+        db.queryForObject(
+            "SELECT count(*) FROM kafka_message_log WHERE raw_bytes IS NOT NULL", Integer.class));
+    assertEquals(
+        1,
+        db.queryForObject(
+            "SELECT count(*) FROM delivery_attempt WHERE response_body IS NOT NULL",
+            Integer.class));
+    db.update("UPDATE message_inbox SET legal_hold=false");
+    retention.purge();
+    assertEquals(
+        0,
+        db.queryForObject(
+            "SELECT count(*) FROM kafka_message_log WHERE raw_bytes IS NOT NULL", Integer.class));
+    assertEquals(
+        0,
+        db.queryForObject(
+            "SELECT count(*) FROM delivery_attempt WHERE response_body IS NOT NULL",
+            Integer.class));
+  }
 }

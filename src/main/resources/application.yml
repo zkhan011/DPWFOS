@@ -99,8 +99,11 @@ fos:
     enabled: false
   kafka:
     enabled: false
+    cluster-id: ${FOS_KAFKA_CLUSTER_ID:primary}
     yard-topic: fos.fms.vehicle-yard-event.v1
     operation-topic: fos.fms.vehicle-operation-status.v1
+  operations-log:
+    payload-retention-days: ${FOS_LOG_PAYLOAD_RETENTION_DAYS:7}
   retention:
     enabled: false
 
