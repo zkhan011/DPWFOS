@@ -140,4 +140,75 @@ class ReceiverClientTest {
     response = "x".repeat(65537);
     assertEquals("UNKNOWN", client(false).send(work()).state());
   }
+
+  @Test
+  void savedEndpointIsUsedAndAllHttpResponsesAreCaptured() {
+    var settings = org.mockito.Mockito.mock(com.dpw.fos.admin.EndpointSettings.class);
+    String url = "http://localhost:" + server.getAddress().getPort();
+    org.mockito.Mockito.when(settings.resolve(org.mockito.ArgumentMatchers.any(Work.class)))
+        .thenReturn(new FosProperties.Target(url, null, true));
+    var client = new ReceiverClient(TestProperties.create(), new ObjectMapper(), settings);
+    status = 400;
+    response = "{\"error\":\"invalid job\"}";
+    var result = client.send(work());
+    assertEquals(url, result.destination());
+    assertEquals(response, result.responseBody());
+    assertEquals(400, result.httpCode());
+    status = 200;
+    response = "not JSON";
+    result = client.send(work());
+    assertEquals("UNKNOWN", result.state());
+    assertEquals(response, result.responseBody());
+    assertEquals(200, result.httpCode());
+    status = 503;
+    result = client.send(work());
+    assertEquals("RETRY_WAIT", result.state());
+    assertEquals(response, result.responseBody());
+  }
+
+  @Test
+  void syntheticTrafficRemainsIsolatedFromSavedLiveRoutes() {
+    status = 200;
+    response = "{\"msgId\":\"SIM-A\",\"code\":\"0\"}";
+    var base =
+        TestProperties.create(
+            Map.of(
+                "vehicle-job",
+                new FosProperties.Target(
+                    "http://localhost:" + server.getAddress().getPort(), null, true)));
+    var p =
+        new FosProperties(
+            false,
+            true,
+            false,
+            base.maxBytes(),
+            base.maxIdentifier(),
+            base.maxOperatorName(),
+            base.maxOperationAge(),
+            base.maxFutureSkew(),
+            base.leaseDuration(),
+            base.requestTimeout(),
+            base.maxAttempts(),
+            base.concurrencyPerTarget(),
+            base.audience(),
+            base.principals(),
+            base.allowedHosts(),
+            base.targets());
+    var settings = org.mockito.Mockito.mock(com.dpw.fos.admin.EndpointSettings.class);
+    var client = new ReceiverClient(p, new ObjectMapper(), settings);
+    org.springframework.test.util.ReflectionTestUtils.setField(client, "simulatorAvailable", true);
+    var w =
+        new Work(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            MessageType.VEHICLE_JOB,
+            "SIM-A",
+            "{\"msgId\":\"SIM-A\"}",
+            1,
+            1,
+            UUID.randomUUID(),
+            Instant.now());
+    assertEquals("DELIVERED", client.send(w).state());
+    org.mockito.Mockito.verifyNoInteractions(settings);
+  }
 }

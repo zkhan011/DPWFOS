@@ -46,6 +46,8 @@ class AdminPagesTest {
   @MockBean com.dpw.fos.simulator.SimulatorConsole console;
   @MockBean JdbcTemplate jdbc;
   @MockBean TransactionTemplate transaction;
+  @MockBean EndpointSettings endpoints;
+  @MockBean MessageHistory history;
   HttpClient client;
 
   @BeforeEach
@@ -172,5 +174,73 @@ class AdminPagesTest {
     assertTrue(html.contains("&lt;script&gt;"));
     assertFalse(html.contains("<script>alert(1)</script>"));
     verify(modules, never()).set(anyString(), anyBoolean(), anyString(), anyString());
+  }
+
+  @Test
+  void operationsPagesRenderEscapePayloadsAndProtectSettings() throws Exception {
+    assertEquals(302, get("/admin/endpoints").statusCode());
+    assertEquals(302, get("/admin/kafka").statusCode());
+    String token = signIn();
+    when(endpoints.list())
+        .thenReturn(
+            List.of(
+                Map.of(
+                    "route",
+                    "vehicle-job",
+                    "system",
+                    "FMS",
+                    "effective_url",
+                    "https://localhost/jobs",
+                    "revision",
+                    0,
+                    "effective_confirmed",
+                    true)));
+    assertEquals(200, get("/admin/endpoints").statusCode());
+    assertTrue(get("/admin/endpoints").body().contains("Save endpoint"));
+    assertEquals(
+        403,
+        post("/admin/endpoints/vehicle-job", "url=https://localhost/jobs&reason=test&revision=0")
+            .statusCode());
+    verify(endpoints, never())
+        .save(
+            anyString(),
+            anyString(),
+            anyBoolean(),
+            anyLong(),
+            anyString(),
+            anyString(),
+            anyBoolean());
+    assertEquals(
+        302,
+        post(
+                "/admin/endpoints/vehicle-job",
+                "url=https://localhost/jobs&reason=test&revision=0&_csrf="
+                    + URLEncoder.encode(token, java.nio.charset.StandardCharsets.UTF_8))
+            .statusCode());
+    verify(endpoints)
+        .save("vehicle-job", "https://localhost/jobs", false, 0, "test", "admin", false);
+    assertEquals(200, get("/admin/messages").statusCode());
+    assertEquals(200, get("/admin/kafka").statusCode());
+    var id = UUID.randomUUID();
+    when(history.detail(id))
+        .thenReturn(
+            Map.of(
+                "msg_id",
+                "<script>alert(1)</script>",
+                "display_payload",
+                "<img src=x onerror=alert(1)>",
+                "state",
+                "DELIVERED"));
+    when(history.attempts(id))
+        .thenReturn(List.of(Map.of("display_response", "<script>bad()</script>")));
+    var detail = get("/admin/messages/" + id);
+    assertEquals(200, detail.statusCode());
+    assertTrue(detail.body().contains("&lt;script&gt;"));
+    assertFalse(detail.body().contains("<script>"));
+    when(history.kafkaDetail(id))
+        .thenReturn(Map.of("topic", "yard", "display_payload", "<script>bad()</script>"));
+    var kafka = get("/admin/kafka/" + id);
+    assertEquals(200, kafka.statusCode());
+    assertTrue(kafka.body().contains("&lt;script&gt;"));
   }
 }

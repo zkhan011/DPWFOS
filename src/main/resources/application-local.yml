@@ -21,7 +21,7 @@ fos:
   principals:
     tos-local: TOS
     fms-local: FMS
-  allowed-hosts: [localhost,127.0.0.1]
+  allowed-hosts: ${FOS_ALLOWED_HOSTS:localhost,127.0.0.1}
   workers:
     enabled: true
   kafka:

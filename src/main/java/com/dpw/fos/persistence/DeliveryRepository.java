@@ -156,15 +156,18 @@ WHERE delivery_id=? AND state='IN_FLIGHT' AND lease_owner=? AND lease_generation
               if (n == 0) return false;
               db.update(
                   "INSERT INTO"
-                      + " delivery_attempt(attempt_id,delivery_id,attempt_number,http_code,business_code,duration_ms,outcome)"
-                      + " VALUES(?,?,?,?,?,?,?)",
+                      + " delivery_attempt(attempt_id,delivery_id,attempt_number,http_code,business_code,duration_ms,outcome,destination,response_body,idempotency_confirmed)"
+                      + " VALUES(?,?,?,?,?,?,?,?,?,?)",
                   UUID.randomUUID(),
                   w.id(),
                   w.attempt(),
                   o.httpCode(),
                   o.businessCode(),
                   duration,
-                  o.category());
+                  o.category(),
+                  o.destination(),
+                  o.responseBody(),
+                  o.idempotencyConfirmed());
               return true;
             }));
   }

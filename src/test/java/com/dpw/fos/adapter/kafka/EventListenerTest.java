@@ -23,7 +23,14 @@ class EventListenerTest {
     var db = mock(JdbcTemplate.class);
     var ack = mock(Acknowledgment.class);
     var p = TestProperties.create();
-    var listener = new EventListener(service, new ContractValidator(p), db, p, new ObjectMapper());
+    var listener =
+        new EventListener(
+            service,
+            new ContractValidator(p),
+            db,
+            p,
+            new ObjectMapper(),
+            mock(KafkaMessageLog.class));
     when(service.accept(any(), any(), any()))
         .thenThrow(new DataAccessResourceFailureException("down"));
     var r =
@@ -47,7 +54,14 @@ class EventListenerTest {
     var p = TestProperties.create();
     when(db.update(anyString(), any(Object[].class)))
         .thenThrow(new DataAccessResourceFailureException("down"));
-    var listener = new EventListener(service, new ContractValidator(p), db, p, new ObjectMapper());
+    var listener =
+        new EventListener(
+            service,
+            new ContractValidator(p),
+            db,
+            p,
+            new ObjectMapper(),
+            mock(KafkaMessageLog.class));
     assertThrows(
         DataAccessResourceFailureException.class,
         () ->
@@ -56,5 +70,59 @@ class EventListenerTest {
                 new ConsumerRecord<>("yard", 0, 1, "T501", new byte[0]),
                 ack));
     verifyNoInteractions(ack);
+  }
+
+  @Test
+  void journalFailurePreventsAcknowledgmentAfterAcceptance() throws Exception {
+    var p = TestProperties.create();
+    var service = mock(AcceptanceService.class);
+    var db = mock(JdbcTemplate.class);
+    var journal = mock(KafkaMessageLog.class);
+    var ack = mock(Acknowledgment.class);
+    var id = java.util.UUID.randomUUID();
+    when(service.accept(any(), any(), any()))
+        .thenReturn(
+            new com.dpw.fos.persistence.InboxRepository.Receipt(id, "M", "FMS", "PENDING", null));
+    var listener =
+        new EventListener(service, new ContractValidator(p), db, p, new ObjectMapper(), journal);
+    var record =
+        new ConsumerRecord<String, byte[]>(
+            "yard",
+            0,
+            4,
+            "T501",
+            Files.readAllBytes(Path.of("contracts/examples/vehicle-yard-event.json")));
+    doThrow(new DataAccessResourceFailureException("journal down"))
+        .when(journal)
+        .record(any(), any(), any(), any());
+    assertThrows(
+        DataAccessResourceFailureException.class,
+        () -> listener.consume(MessageType.YARD_EVENT, record, ack));
+    verifyNoInteractions(ack);
+    doNothing().when(journal).record(any(), any(), any(), any());
+    listener.consume(MessageType.YARD_EVENT, record, ack);
+    var order = inOrder(journal, ack);
+    order.verify(journal, times(2)).record(MessageType.YARD_EVENT, record, id, null);
+    order.verify(ack).acknowledge();
+  }
+
+  @Test
+  void poisonIsJournaledBeforeAcknowledgment() {
+    var p = TestProperties.create();
+    var journal = mock(KafkaMessageLog.class);
+    var ack = mock(Acknowledgment.class);
+    var listener =
+        new EventListener(
+            mock(AcceptanceService.class),
+            new ContractValidator(p),
+            mock(JdbcTemplate.class),
+            p,
+            new ObjectMapper(),
+            journal);
+    var record = new ConsumerRecord<String, byte[]>("yard", 0, 7, "T501", new byte[0]);
+    listener.consume(MessageType.YARD_EVENT, record, ack);
+    var order = inOrder(journal, ack);
+    order.verify(journal).record(eq(MessageType.YARD_EVENT), eq(record), isNull(), anyString());
+    order.verify(ack).acknowledge();
   }
 }
